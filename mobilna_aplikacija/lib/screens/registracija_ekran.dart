@@ -13,7 +13,7 @@ class RegistracijaEkran extends StatelessWidget {
   Future<void> _register(BuildContext context) async {
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/register'),
+        Uri.parse('https://pametanparking-production.up.railway.app/register'),
         headers: {"Content-Type": "application/json"},
         body: json.encode({
           "name": _nameController.text,

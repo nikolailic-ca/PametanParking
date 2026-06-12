@@ -30,14 +30,18 @@ class _ProfilEkranState extends State<ProfilEkran> {
   }
 
   Future<void> fetchProfil() async {
-    final response = await http.get(Uri.parse('http://10.0.2.2:8000/profil/${UserSession.loggedInUserId}'));
+    final response = await http.get(Uri.parse('https://pametanparking-production.up.railway.app/profil/${UserSession.loggedInUserId}'));
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       setState(() {
         korisnik = data;
         ucitavam = false;
         if (korisnik['rezervacija'] != null) {
-          startajTimer(DateTime.parse(korisnik['rezervacija']['expire_time']));
+          startajTimer(
+            DateTime.parse(
+              korisnik['rezervacija']['expire_time']
+            ).toLocal()
+          );
         }
       });
     }

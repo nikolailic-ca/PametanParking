@@ -26,7 +26,8 @@ class Reservation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     spot_id = db.Column(db.Integer, db.ForeignKey('parking_spot.id'))
-    expire_time = db.Column(db.DateTime)
+    from datetime import datetime, timedelta, timezone
+    expire_time = datetime.now(timezone.utc) + timedelta(minutes=15)
 
 # Kreiranje tabela i inicijalizacija
 with app.app_context():

@@ -54,7 +54,7 @@ class _GlavniEkranState extends State<GlavniEkran> {
 
   Future<void> fetchParkingStatus() async {
     try {
-      final response = await http.get(Uri.parse('http://10.0.2.2:8000/parking-status'));
+      final response = await http.get(Uri.parse('https://pametanparking-production.up.railway.app/parking-status'));
       if (response.statusCode == 200) {
         if (mounted) {
           setState(() {
@@ -70,7 +70,7 @@ class _GlavniEkranState extends State<GlavniEkran> {
 
   Future<void> posaljiRezervaciju(int spotId) async {
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:8000/rezervisi'),
+      Uri.parse('https://pametanparking-production.up.railway.app/rezervisi'),
       headers: {"Content-Type": "application/json"},
       body: json.encode({"spot_id": spotId, "user_id": UserSession.loggedInUserId}),
     );
@@ -79,7 +79,7 @@ class _GlavniEkranState extends State<GlavniEkran> {
 
   Future<void> posaljiOdrezervaciju(int spotId) async {
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:8000/odrezervisi'),
+      Uri.parse('https://pametanparking-production.up.railway.app/odrezervisi'),
       headers: {"Content-Type": "application/json"},
       body: json.encode({"spot_id": spotId, "user_id": UserSession.loggedInUserId}),
     );
