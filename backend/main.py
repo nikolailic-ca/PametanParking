@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 app = Flask(__name__)
 CORS(app)
@@ -26,8 +26,7 @@ class Reservation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     spot_id = db.Column(db.Integer, db.ForeignKey('parking_spot.id'))
-    from datetime import datetime, timedelta, timezone
-    expire_time = datetime.now(timezone.utc) + timedelta(minutes=15)
+    expire_time = db.Column(db.DateTime)
 
 # Kreiranje tabela i inicijalizacija
 with app.app_context():
@@ -88,7 +87,7 @@ def rezervisi():
     mesto = ParkingSpot.query.get(spot_id)
     if mesto and mesto.status == 'slobodno':
         mesto.status = 'rezervisano'
-        expire_time = datetime.now() + timedelta(minutes=15)
+        expire_time = datetime.now(timezone.utc) + timedelta(minutes=15)
         nova_rez = Reservation(user_id=user_id, spot_id=spot_id, expire_time=expire_time)
         db.session.add(nova_rez)
         db.session.commit()
