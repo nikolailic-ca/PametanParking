@@ -30,7 +30,7 @@ class _ProfilEkranState extends State<ProfilEkran> {
   }
 
   Future<void> fetchProfil() async {
-    final response = await http.get(Uri.parse('http://127.0.0.1:8000/profil/${UserSession.loggedInUserId}'));
+    final response = await http.get(Uri.parse('http://10.0.2.2:8000/profil/${UserSession.loggedInUserId}'));
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       setState(() {

@@ -54,7 +54,7 @@ class _GlavniEkranState extends State<GlavniEkran> {
 
   Future<void> fetchParkingStatus() async {
     try {
-      final response = await http.get(Uri.parse('http://127.0.0.1:8000/parking-status'));
+      final response = await http.get(Uri.parse('http://10.0.2.2:8000/parking-status'));
       if (response.statusCode == 200) {
         if (mounted) {
           setState(() {
@@ -70,7 +70,7 @@ class _GlavniEkranState extends State<GlavniEkran> {
 
   Future<void> posaljiRezervaciju(int spotId) async {
     final response = await http.post(
-      Uri.parse('http://127.0.0.1:8000/rezervisi'),
+      Uri.parse('http://10.0.2.2:8000/rezervisi'),
       headers: {"Content-Type": "application/json"},
       body: json.encode({"spot_id": spotId, "user_id": UserSession.loggedInUserId}),
     );
@@ -79,7 +79,7 @@ class _GlavniEkranState extends State<GlavniEkran> {
 
   Future<void> posaljiOdrezervaciju(int spotId) async {
     final response = await http.post(
-      Uri.parse('http://127.0.0.1:8000/odrezervisi'),
+      Uri.parse('http://10.0.2.2:8000/odrezervisi'),
       headers: {"Content-Type": "application/json"},
       body: json.encode({"spot_id": spotId, "user_id": UserSession.loggedInUserId}),
     );
@@ -126,7 +126,11 @@ class _GlavniEkranState extends State<GlavniEkran> {
                           key: ValueKey(ruta.length),
                           options: MapOptions(initialCenter: mojaLokacija!, initialZoom: 14),
                           children: [
-                            TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
+                           TileLayer(
+  urlTemplate:
+      'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+  userAgentPackageName: 'com.example.mobilna_aplikacija',
+),
                             PolylineLayer(polylines: [Polyline(points: ruta, color: Colors.blue, strokeWidth: 5)]),
                             MarkerLayer(markers: [
                               Marker(point: mojaLokacija!, child: const Icon(Icons.my_location, color: Colors.blue)),

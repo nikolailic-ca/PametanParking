@@ -14,7 +14,7 @@ class LoginEkran extends StatelessWidget {
   Future<void> _login(BuildContext context) async {
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/login'),
+        Uri.parse('http://10.0.2.2:8000/login'),
         headers: {"Content-Type": "application/json"},
         body: json.encode({
           "email": _emailController.text,
