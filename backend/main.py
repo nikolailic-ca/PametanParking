@@ -129,6 +129,71 @@ def odrezervisi():
         return jsonify({"status": "success"})
     return jsonify({"status": "error", "poruka": "Nemaš pravo na ovo!"}), 403
 
+@app.route('/nfc-check', methods=['POST'])
+def nfc_check():
+    data = request.get_json()
+
+    uid = data.get('nfc_uid')
+
+    user = User.query.filter_by(nfc_uid=uid).first()
+
+    if not user:
+        return jsonify({
+            "allowed": False,
+            "reason": "Nepostojeci korisnik"
+        })
+
+    slobodna_mesta = ParkingSpot.query.filter_by(
+        status='slobodno'
+    ).count()
+
+    if slobodna_mesta == 0:
+        return jsonify({
+            "allowed": False,
+            "reason": "Parking pun"
+        })
+
+    return jsonify({
+        "allowed": True,
+        "user_id": user.id
+    })
+
+@app.route('/free-spots')
+def free_spots():
+
+    slobodna = ParkingSpot.query.filter_by(
+        status='slobodno'
+    ).count()
+
+    ukupno = ParkingSpot.query.count()
+
+    return jsonify({
+        "free_spots": slobodna,
+        "total_spots": ukupno
+    })
+
+@app.route('/sensor-update', methods=['POST'])
+def sensor_update():
+
+    data = request.get_json()
+
+    spot_id = data.get('spot_id')
+    occupied = data.get('occupied')
+
+    spot = ParkingSpot.query.get(spot_id)
+
+    if not spot:
+        return jsonify({"error":"Mesto ne postoji"}),404
+
+    if occupied:
+        spot.status = 'zauzeto'
+    else:
+        spot.status = 'slobodno'
+
+    db.session.commit()
+
+    return jsonify({"success":True})
+
 import os
 
 if __name__ == '__main__':
