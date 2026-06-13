@@ -19,14 +19,14 @@ class _GlavniEkranState extends State<GlavniEkran> {
   List<dynamic> parkingMesta = [];
   bool ucitavam = true;
   LatLng? mojaLokacija;
-  LatLng parkingLokacija = const LatLng(44.8166, 20.4575);
+  LatLng parkingLokacija = const LatLng(44.8176, 20.4605);
   List<LatLng> ruta = [];
 
   @override
   void initState() {
     super.initState();
     fetchParkingStatus();
-    mojaLokacija = const LatLng(44.8266, 20.4575);
+    mojaLokacija = const LatLng(44.772605, 20.475169);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchRuta();
     });
