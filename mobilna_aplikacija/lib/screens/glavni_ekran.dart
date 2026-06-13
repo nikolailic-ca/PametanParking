@@ -6,7 +6,9 @@ import '../user_session.dart';
 import 'login_ekran.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-//import 'package:geolocator/geolocator.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geolocator/geolocator.dart';
+import 'dart:async';
 
 class GlavniEkran extends StatefulWidget {
   const GlavniEkran({super.key});
@@ -21,16 +23,114 @@ class _GlavniEkranState extends State<GlavniEkran> {
   LatLng? mojaLokacija;
   LatLng parkingLokacija = const LatLng(44.8176, 20.4605);
   List<LatLng> ruta = [];
+  StreamSubscription<Position>? _positionStream;
 
   @override
   void initState() {
     super.initState();
     fetchParkingStatus();
-    mojaLokacija = const LatLng(44.772605, 20.475169);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchRuta();
-    });
+    // mojaLokacija = const LatLng(44.772605, 20.475169);
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   _fetchRuta();
+    // });
+
+  _pokreniPracenjeLokacije();
   }
+
+@override
+void dispose() {
+  _positionStream?.cancel();
+  super.dispose();
+}
+
+  Future<void> _pokreniPracenjeLokacije() async {
+  bool serviceEnabled;
+  LocationPermission permission;
+
+  serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
+  if (!serviceEnabled) {
+    return;
+  }
+
+  permission = await Geolocator.checkPermission();
+
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+  }
+
+  if (permission == LocationPermission.deniedForever) {
+    return;
+  }
+
+  final Position position =
+      await Geolocator.getCurrentPosition();
+
+  setState(() {
+    mojaLokacija = LatLng(
+      position.latitude,
+      position.longitude,
+    );
+  });
+
+  // Rutu računamo samo jednom
+  _fetchRuta();
+
+  _positionStream = Geolocator.getPositionStream(
+  locationSettings: const LocationSettings(
+    accuracy: LocationAccuracy.high,
+    distanceFilter: 5,
+  ),
+).listen((Position position) {
+  print(
+    "Nova lokacija: ${position.latitude}, ${position.longitude}"
+  );
+
+  setState(() {
+    mojaLokacija = LatLng(
+      position.latitude,
+      position.longitude,
+    );
+  });
+
+
+  _fetchRuta();
+});
+}
+
+  Future<void> _odrediLokaciju() async {
+  bool serviceEnabled;
+  LocationPermission permission;
+
+  serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
+  if (!serviceEnabled) {
+    return;
+  }
+
+  permission = await Geolocator.checkPermission();
+
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+  }
+
+  if (permission == LocationPermission.deniedForever) {
+    return;
+  }
+
+  final Position position =
+      await Geolocator.getCurrentPosition();
+
+  setState(() {
+    mojaLokacija = LatLng(
+      position.latitude,
+      position.longitude,
+    );
+  });
+
+  _fetchRuta();
+}
+
 
   Future<void> _fetchRuta() async {
     if (mojaLokacija == null) return;
@@ -69,22 +169,58 @@ class _GlavniEkranState extends State<GlavniEkran> {
   }
 
   Future<void> posaljiRezervaciju(int spotId) async {
-    final response = await http.post(
-      Uri.parse('https://pametanparking-production.up.railway.app/rezervisi'),
-      headers: {"Content-Type": "application/json"},
-      body: json.encode({"spot_id": spotId, "user_id": UserSession.loggedInUserId}),
-    );
-    if (response.statusCode == 200) fetchParkingStatus();
+  final response = await http.post(
+    Uri.parse('https://pametanparking-production.up.railway.app/rezervisi'),
+    headers: {"Content-Type": "application/json"},
+    body: json.encode({
+      "spot_id": spotId,
+      "user_id": UserSession.loggedInUserId
+    }),
+  );
+
+  if (response.statusCode == 200) {
+    fetchParkingStatus();
+  } else {
+    final data = json.decode(response.body);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            data['poruka'] ?? 'Greška prilikom rezervacije!'
+          ),
+        ),
+      );
+    }
   }
+}
 
   Future<void> posaljiOdrezervaciju(int spotId) async {
-    final response = await http.post(
-      Uri.parse('https://pametanparking-production.up.railway.app/odrezervisi'),
-      headers: {"Content-Type": "application/json"},
-      body: json.encode({"spot_id": spotId, "user_id": UserSession.loggedInUserId}),
-    );
-    if (response.statusCode == 200) fetchParkingStatus();
+  final response = await http.post(
+    Uri.parse('https://pametanparking-production.up.railway.app/odrezervisi'),
+    headers: {"Content-Type": "application/json"},
+    body: json.encode({
+      "spot_id": spotId,
+      "user_id": UserSession.loggedInUserId
+    }),
+  );
+
+  if (response.statusCode == 200) {
+    fetchParkingStatus();
+  } else {
+    final data = json.decode(response.body);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            data['poruka'] ?? 'Ne možete osloboditi ovo mesto!'
+          ),
+        ),
+      );
+    }
   }
+}
 
   void _logout() {
     UserSession.loggedInUserId = null;
