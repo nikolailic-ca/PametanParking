@@ -143,6 +143,17 @@ def nfc_check():
             "reason": "Nepostojeci korisnik"
         })
 
+    rezervacija = Reservation.query.filter_by(
+        user_id=user.id
+    ).first()
+
+    if rezervacija:
+        return jsonify({
+            "allowed": True,
+            "user_id": user.id,
+            "reserved_spot": rezervacija.spot_id
+        })
+
     slobodna_mesta = ParkingSpot.query.filter_by(
         status='slobodno'
     ).count()
